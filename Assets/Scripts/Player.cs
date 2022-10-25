@@ -122,6 +122,7 @@ public class Player : MonoBehaviour
         rigid.velocity = new Vector2(0, rigid.velocity.y);
         anim.SetBool("isMove", false);
     }
+
     public void GetScore()
     {
         Debug.Log("점수가 1 증가!");

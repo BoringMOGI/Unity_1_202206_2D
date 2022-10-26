@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     // Rigidbody2D 컴포넌트를 참조하는 변수.
     Rigidbody2D rigid;
     Animator anim;
+    new Collider2D collider2D;
 
     int score;                  // 나의 점수.
     int maxCount;               // 최대 점프 횟수.
@@ -39,7 +40,7 @@ public class Player : MonoBehaviour
         // GetComponent : 오브젝트에게 붙어있는 Rigidbody2D 컴포넌트를 검색한다.
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        //spriteRenderer = GetComponent<SpriteRenderer>();
+        collider2D = GetComponent<Collider2D>();
 
         maxCount = 1;
         jumpCount = maxCount;
@@ -62,6 +63,7 @@ public class Player : MonoBehaviour
         }
 
         // 항상 animator의 파라미터를 최신화 시킨다.
+        anim.SetBool("isMove", rigid.velocity.magnitude != 0);
         anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("velocityY", rigid.velocity.y);
     }
@@ -88,7 +90,6 @@ public class Player : MonoBehaviour
         // 현재 속도의 x축은 입력에 따라서
         // 현재 속도의 y축은 원래 그대로 변경한다.
         rigid.velocity = new Vector2(moveSpeed * x, rigid.velocity.y);
-        anim.SetBool("isMove", x != 0);
 
         if (x == -1)
         {
@@ -115,12 +116,24 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void OnGoal()
+    // 기본 매개변수
+    // => 인자를 넘기지 않으면 기본값으로 사용하겠다.
+    public void SwitchLockControl(bool isLock, bool isStopVelocity = true)
     {
-        Debug.Log("골에 들어왔다!!");
-        isLockControl = true;
-        rigid.velocity = new Vector2(0, rigid.velocity.y);
-        anim.SetBool("isMove", false);
+        isLockControl = isLock;
+        if(isLock)
+        {
+            // 플레이어의 컨트롤 락이 걸린 시점에서
+            // 기존 X축 속도를 지울것인가 유지할 것인가?
+            float velocityX = isStopVelocity ? 0 : rigid.velocity.x;
+            rigid.velocity = new Vector2(velocityX, rigid.velocity.y);
+        }
+    }
+    public void OnDamage()
+    {
+        SwitchLockControl(true, false);
+        collider2D.isTrigger = true;
+        GameUI.Instance.SwitchClearPanel(true, false);
     }
 
     public void GetScore()

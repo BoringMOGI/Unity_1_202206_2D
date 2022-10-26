@@ -6,10 +6,11 @@ public class DeadZone : MonoBehaviour
 {
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.tag == "Player")
+        Player player = collision.GetComponent<Player>();
+        if(player != null)
         {
-            Camera.main.transform.SetParent(null);  // 메인 카메라의 부모 오브젝트는 없다.
-            collision.gameObject.SetActive(false);
+            player.OnDamage();
+            FollowCamera.Instance.ResetTarget();
         }
     }
 }

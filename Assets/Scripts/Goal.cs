@@ -14,9 +14,9 @@ public class Goal : MonoBehaviour
         if(collision.gameObject.tag == "Player")
         {
             Player p = collision.GetComponent<Player>();
-            p.OnGoal();
+            p.SwitchLockControl(true);
 
-            GameUI.Instance.SwitchClearPanel(true);
+            GameUI.Instance.SwitchClearPanel(true, true);
             Debug.Log("ÇÃ·¹ÀÌ¾î¶û ºÎµúÃÆ´Ù.");
         }
     }

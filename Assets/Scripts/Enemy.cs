@@ -12,9 +12,9 @@ public class Enemy : MonoBehaviour
         public float rayDistance;       // 광선의 길이.
         public LayerMask mask;
     }
+    [SerializeField] float pushPower;
     [SerializeField] float moveSpeed;
     [SerializeField] AiCheckData checkData;
-
 
     Rigidbody2D rigid;
     SpriteRenderer spriteRenderer;
@@ -45,6 +45,25 @@ public class Enemy : MonoBehaviour
 
         rigid.velocity = velocity;
         anim.SetBool("isMove", rigid.velocity.magnitude != 0.0f);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // 몬스터가 어떠한 충돌체와 충돌했는데 그 대상이 Player 컴포넌트를 들고 있다면...
+        Player player = collision.gameObject.GetComponent<Player>();
+        if(player != null)
+        {
+            // 방향    direction (정규화된 방향)
+            // 이동량  movement (방향 * 거리)
+            // 위치    position.
+
+            // normalized : 정규화. 이동량에서 방향 벡터로 치환한다.
+            // magnitude  : 거리, 이동량에서 거리를 float로 반환한다.
+
+            Vector3 direction = (player.transform.position - transform.position).normalized;
+            bool isLeft = direction.x < 0f;
+            player.OnDamage(isLeft, pushPower);
+        }
     }
 
     private bool CheckWall(Vector2 point)

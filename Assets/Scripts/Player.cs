@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] string playerName;
     [SerializeField] int hp;
+    [SerializeField] float godTime;         // 무적 시간.
+
     [SerializeField] float moveSpeed;       // 이동 속도.
     [SerializeField] float jumpPower;       // 점프력.
 
@@ -27,8 +29,8 @@ public class Player : MonoBehaviour
 
     int jumpCount;              // (가능한)점프 횟수.
     bool isGrounded;            // 내가 땅에 서 있는가?
-
     bool isLockControl;         // 캐릭터 컨트롤 막기.
+    bool isPushForce;           // 내가 적에게 맞아서 일정 힘으로 날아가고 있다.
     
     // 이벤트 함수
     // => 내가 호출하는게 아니고 누군가에 의해서 호출되는 것.
@@ -56,7 +58,7 @@ public class Player : MonoBehaviour
 
         // !bool : not연산
         // true는 false, false는 true.
-        if (!isLockControl)
+        if (!isLockControl && !isPushForce)
         {
             Movement();
             Jump();
@@ -80,7 +82,10 @@ public class Player : MonoBehaviour
         // 해당 물체의 Collider를 반환해준다.
         isGrounded = Physics2D.OverlapCircle(groundPivot.position, groundRadius, groundMask);
         if (isGrounded && rigid.velocity.y <= 0f)
+        {
             jumpCount = maxCount;
+            isPushForce = false;
+        }
     }
     private void Movement()
     {
@@ -129,6 +134,43 @@ public class Player : MonoBehaviour
             rigid.velocity = new Vector2(velocityX, rigid.velocity.y);
         }
     }
+
+    public void OnDamage(bool isLeft, float force)
+    {
+        Vector2 direction = Vector2.up;
+        direction += Vector2.right * (isLeft ? -1f : 1f);
+
+        isPushForce = true;
+        rigid.velocity = Vector2.zero;
+        rigid.AddForce(direction * force, ForceMode2D.Impulse);
+
+        StartCoroutine(IEGodMode());
+    }
+
+    IEnumerator IEGodMode()
+    {
+        gameObject.layer = LayerMask.NameToLayer("Player_God");
+
+        float time = godTime;
+        float blinkTime = 0.0f;
+        bool isLight = true;
+        while((time -= Time.deltaTime) > 0.0f)
+        {
+            if ((blinkTime += Time.deltaTime) >= 0.1f)
+            {
+                spriteRenderer.color = isLight ? Color.red : Color.white;
+                isLight = !isLight;
+                blinkTime = 0.0f;
+            }
+            
+            yield return null;      // 잠시 대기하겠다.
+        }
+
+        spriteRenderer.color = Color.white;
+        gameObject.layer = LayerMask.NameToLayer("Player");
+    }
+
+
     public void OnDamage()
     {
         SwitchLockControl(true, false);

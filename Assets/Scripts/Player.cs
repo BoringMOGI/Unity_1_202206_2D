@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [System.Serializable]
+    struct OverlapCircle
+    {
+        public Transform pivot;
+        public LayerMask mask;
+        public float radius;
+    }
+
     // 변수 앞에 붙는 [...]는 해당 변수에게 속성을 부여하겠다.
     // SerializeField 속성 : Component에 필드로써 노출시키겠다.
     // 컴포넌트 필드에 연결하겠다 정도로 해석한다.
@@ -15,9 +23,8 @@ public class Player : MonoBehaviour
     [SerializeField] float moveSpeed;       // 이동 속도.
     [SerializeField] float jumpPower;       // 점프력.
 
-    [SerializeField] Transform groundPivot; // 지면 체크 Ray의 기준점.
-    [SerializeField] LayerMask groundMask;  // 지면 체크 레이어 마스크.
-    [SerializeField] float groundRadius;    // 지면 체크 반지름.
+    [SerializeField] OverlapCircle overlapGround;   // 지면 체크 관련 구조체.
+    [SerializeField] OverlapCircle overlapAttack;   // 공격 체크 관련 구조체.
 
     // Rigidbody2D 컴포넌트를 참조하는 변수.
     Rigidbody2D rigid;
@@ -64,6 +71,8 @@ public class Player : MonoBehaviour
             Jump();
         }
 
+        Attack();
+
         // 항상 animator의 파라미터를 최신화 시킨다.
         anim.SetBool("isMove", rigid.velocity.magnitude != 0);
         anim.SetBool("isGrounded", isGrounded);
@@ -80,7 +89,7 @@ public class Player : MonoBehaviour
 
         // 콜라이더 비슷한 원형 충돌 영역을 만들고 그 곳에 물체가 충돌하면(=들어오면)
         // 해당 물체의 Collider를 반환해준다.
-        isGrounded = Physics2D.OverlapCircle(groundPivot.position, groundRadius, groundMask);
+        isGrounded = Physics2D.OverlapCircle(overlapGround.pivot.position, overlapGround.radius, overlapGround.mask);
         if (isGrounded && rigid.velocity.y <= 0f)
         {
             jumpCount = maxCount;
@@ -118,6 +127,25 @@ public class Player : MonoBehaviour
 
             rigid.velocity = new Vector2(rigid.velocity.x, 0f);
             rigid.AddForce(transform.up * jumpPower, ForceMode2D.Impulse);
+        }
+    }
+    private void Attack()
+    {
+        // 원형 충돌 영역을 만들고 그곳에 충돌한 모든 충돌체를 가져온다.
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(overlapAttack.pivot.position, overlapAttack.radius, overlapAttack.mask);
+        if(colliders.Length > 0)
+        {
+            // 검색한 충돌체를 foreach문으로 순회.
+            foreach(Collider2D collider in colliders)
+            {
+                // Enemy 컴포넌트를 검색해 OnDamaged함수 호출.
+                Enemy enemy = collider.gameObject.GetComponent<Enemy>();
+                enemy.OnDamaged();
+            }
+
+            // 적을 공격하면 나는 위로 3만큼 뛴다.
+            rigid.velocity = new Vector2(rigid.velocity.x, 0f);
+            rigid.AddForce(Vector2.up * 6f, ForceMode2D.Impulse);
         }
     }
 
@@ -170,7 +198,6 @@ public class Player : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Player");
     }
 
-
     public void OnDamage()
     {
         SwitchLockControl(true, false);
@@ -190,9 +217,15 @@ public class Player : MonoBehaviour
     {
         // 씬 뷰에 가상의 아이콘을 그려주겠다. (광선)
         Gizmos.color = Color.green;
-        if(groundPivot != null)
+        if(overlapGround.pivot != null)
         {
-            Gizmos.DrawWireSphere(groundPivot.position, groundRadius);
+            Gizmos.DrawWireSphere(overlapGround.pivot.position, overlapGround.radius);
+        }
+
+        Gizmos.color = Color.red;
+        if (overlapAttack.pivot != null)
+        {
+            Gizmos.DrawWireSphere(overlapAttack.pivot.position, overlapAttack.radius);
         }
     }
 }

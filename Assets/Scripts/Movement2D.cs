@@ -12,13 +12,20 @@ public class Movement2D : MonoBehaviour
     [Header("Movement")]
     [SerializeField] float moveSpeed;
     [SerializeField] float jumpPower;
-    [SerializeField] SpriteRenderer spriteRenderer;
-    [SerializeField] Animator anim;
-    [SerializeField] Rigidbody2D rigid;
+
+    SpriteRenderer spriteRenderer;
+    Rigidbody2D rigid;
+    Animator anim;
 
     public bool isGrounded { get; private set; }
     private int jumpCount;
 
+    private void Start()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        rigid = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+    }
     private void Update()
     {
         isGrounded = Physics2D.OverlapCircle(transform.position + pivotOffset, groundCheckRadius, groundCheckMask);
@@ -26,18 +33,21 @@ public class Movement2D : MonoBehaviour
             jumpCount = 1;
 
         // 항상 animator의 파라미터를 최신화 시킨다.
-        anim.SetBool("isMove", rigid.velocity.magnitude != 0);
-        anim.SetBool("isGrounded", isGrounded);
-        anim.SetFloat("velocityY", rigid.velocity.y);
+        if (anim != null)
+        {
+            anim.SetBool("isMove", rigid.velocity.magnitude != 0);
+            anim.SetBool("isGrounded", isGrounded);
+            anim.SetFloat("velocityY", rigid.velocity.y);
+        }
     }
 
     public void Move(float x)
     {
         rigid.velocity = new Vector2(x * moveSpeed, rigid.velocity.y);
-        if (x < 0)
-            spriteRenderer.flipX = true;
-        else if (x > 0)
-            spriteRenderer.flipX = false;
+    }
+    public void FlipX(bool isFlipX)
+    {
+        spriteRenderer.flipX = isFlipX;
     }
     public void Jump()
     {

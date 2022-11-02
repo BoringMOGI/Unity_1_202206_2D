@@ -258,10 +258,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4299086693393545172, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
-      propertyPath: moveSpeed
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 4299086693393545176, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
       propertyPath: m_RootOrder
       value: 14
@@ -838,11 +834,11 @@ MonoBehaviour:
   movement: {fileID: 734691654}
   hp: 999
   godTime: 2
-  attackOffset: {x: 0, y: -0.35, z: 0}
+  attackOffset: {x: 0, y: -0.41, z: 0}
   attackMask:
     serializedVersion: 2
     m_Bits: 8
-  attackRadius: 0.22
+  attackRadius: 0.15
 --- !u!70 &734691653
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -878,9 +874,6 @@ MonoBehaviour:
   groundCheckRadius: 0.2
   moveSpeed: 3
   jumpPower: 7
-  spriteRenderer: {fileID: 734691647}
-  anim: {fileID: 734691649}
-  rigid: {fileID: 734691651}
 --- !u!1 &784761904
 GameObject:
   m_ObjectHideFlags: 0
@@ -3831,10 +3824,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4299086693393545172, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
-      propertyPath: moveSpeed
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 4299086693393545176, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
       propertyPath: m_RootOrder
       value: 15
@@ -4179,10 +4168,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4299086693393545172, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
-      propertyPath: moveSpeed
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 4299086693393545176, guid: 28541a60f1fefb74c8c5dcc7abe539db, type: 3}
       propertyPath: m_RootOrder
       value: 13

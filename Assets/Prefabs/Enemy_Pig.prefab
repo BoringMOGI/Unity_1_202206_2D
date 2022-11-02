@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4299086693393545177}
   - component: {fileID: 4299086693393545172}
   - component: {fileID: 1656495629798114983}
+  - component: {fileID: 3830896675200361224}
   m_Layer: 3
   m_Name: Enemy_Pig
   m_TagString: Untagged
@@ -158,14 +159,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 149ec531aaa41bd49a9d10ab4b069728, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  checkData:
-    offset: 0.5
-    radius: 0.2
-    rayDistance: 1
-    mask:
-      serializedVersion: 2
-      m_Bits: 128
+  movement: {fileID: 3830896675200361224}
+  pivotOffset: {x: -0.56, y: 0, z: 0}
+  radius: 0.27
+  rayDistance: 1.39
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &1656495629798114983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,3 +179,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pushPower: 5
+--- !u!114 &3830896675200361224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4299086693393545178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f26bf33cbec70da48ac19b659e35fefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pivotOffset: {x: 0, y: -0.35, z: 0}
+  groundCheckMask:
+    serializedVersion: 2
+    m_Bits: 128
+  groundCheckRadius: 0.2
+  moveSpeed: 1
+  jumpPower: 7

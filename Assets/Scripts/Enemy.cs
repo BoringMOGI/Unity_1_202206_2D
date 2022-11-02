@@ -4,32 +4,23 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [System.Serializable]
-    struct AiCheckData
-    {
-        public float offset;            // 기준점 오차.
-        public float radius;            // 원의 반지름.
-        public float rayDistance;       // 광선의 길이.
-        public LayerMask mask;
-    }
+    [SerializeField] Movement2D movement;       // 이동 관련 컴포턴트.
+    [SerializeField] Vector3 pivotOffset;       // 기준점 오차.
+    [SerializeField] float radius;              // 원의 반지름.
+    [SerializeField] float rayDistance;         // 광선의 길이.
+    [SerializeField] LayerMask groundMask;      // 지면 마스크.
 
-    [SerializeField] float moveSpeed;
-    [SerializeField] AiCheckData checkData;
-
+    Animator anim;
     Rigidbody2D rigid;
     new Collider2D collider2D;
-    SpriteRenderer spriteRenderer;
-    Animator anim;
-
     bool isAlive;
     bool isRight;
 
     private void Start()
     {
+        anim = GetComponent<Animator>();
         rigid = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<Collider2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        anim = GetComponent<Animator>();
 
         isAlive = true;
         isRight = false;
@@ -39,28 +30,27 @@ public class Enemy : MonoBehaviour
         if (!isAlive)
             return;
 
-        Vector2 point = transform.position + transform.right * checkData.offset * (isRight ? 1f : -1f);
-        if (CheckWall(point) || CheckCliff(point))
-        {
+        // 가야하는 방향을 정하는 요소.
+        Vector2 rayPoint = transform.position + pivotOffset * (isRight ? -1.0f : 1.0f);
+        bool isCheckWall = CheckWall(rayPoint);
+        bool isCheckCliff = CheckCliff(rayPoint) && movement.isGrounded;
+        if (isCheckWall || isCheckCliff)
             isRight = !isRight;
-            spriteRenderer.flipX = isRight;
-        }
 
-        Vector2 velocity = transform.right * moveSpeed * (isRight ? 1f : -1f);
-        velocity.y = rigid.velocity.y;
-
-        rigid.velocity = velocity;
-        anim.SetBool("isMove", rigid.velocity.magnitude != 0.0f);
+        // 방향을 정한 수 Movement2D를 통해 이동.
+        float x = isRight ? 1 : -1;
+        movement.Move(x);
+        movement.FlipX(isRight);
     }
 
     private bool CheckWall(Vector2 point)
     {
         // 나로부터 특정 방향으로 n만큼 떨어진 위치.
-        return Physics2D.OverlapCircle(point, checkData.radius, checkData.mask) != null;
+        return Physics2D.OverlapCircle(point, radius, groundMask) != null;
     }
     private bool CheckCliff(Vector2 point)
     {
-        RaycastHit2D hit = Physics2D.Raycast(point, Vector2.down, checkData.rayDistance, checkData.mask);
+        RaycastHit2D hit = Physics2D.Raycast(point, Vector2.down, rayDistance, groundMask);
         return hit.collider == null;
     }
 
@@ -84,10 +74,9 @@ public class Enemy : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        Vector2 point = transform.position + transform.right * checkData.offset * (isRight ? 1f : -1f);
-
+        Vector2 rayPoint = transform.position + pivotOffset * (isRight ? -1.0f : 1.0f);
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(point, checkData.radius);
-        Gizmos.DrawRay(point, Vector2.down * checkData.rayDistance);
+        Gizmos.DrawWireSphere(rayPoint, radius);
+        Gizmos.DrawRay(rayPoint, Vector2.down * rayDistance);
     }
 }

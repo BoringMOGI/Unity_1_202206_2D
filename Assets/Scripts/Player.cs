@@ -36,8 +36,14 @@ public class Player : MonoBehaviour
         // true는 false, false는 true.
         if (!isLockControl && !isPushForce)
         {
-            movement.Move(Input.GetAxis("Horizontal"));  // 이동.
-            if (Input.GetKeyDown(KeyCode.Space))         // 점프.
+            float x = Input.GetAxis("Horizontal");
+            movement.Move(x);                           // 이동.
+            if (x < 0)
+                movement.FlipX(true);
+            else if(x > 0)
+                movement.FlipX(false);
+
+            if (Input.GetKeyDown(KeyCode.Space))        // 점프.
                 movement.Jump();
         }
 
@@ -95,7 +101,9 @@ public class Player : MonoBehaviour
         rigid.AddForce(direction * force, ForceMode2D.Impulse);
 
         StartCoroutine(IEGodMode());
+        StartCoroutine(IEForceLock());
     }
+
     IEnumerator IEGodMode()
     {
         gameObject.layer = LayerMask.NameToLayer("Player_God");
@@ -117,6 +125,18 @@ public class Player : MonoBehaviour
 
         spriteRenderer.color = Color.white;
         gameObject.layer = LayerMask.NameToLayer("Player");
+    }
+    IEnumerator IEForceLock()
+    {
+        while(true)
+        {
+            if (rigid.velocity.y <= 0f && movement.isGrounded)
+                break;
+
+            yield return null;
+        }
+
+        isPushForce = false;
     }
 
 

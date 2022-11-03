@@ -9,8 +9,7 @@ public class DeadZone : MonoBehaviour
         Player player = collision.GetComponent<Player>();
         if(player != null)
         {
-            player.OnDamage();
-            FollowCamera.Instance.ResetTarget();
+            player.OnDead();
         }
     }
 }

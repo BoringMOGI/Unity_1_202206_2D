@@ -13,6 +13,9 @@ public class GameUI : MonoBehaviour
     public static GameUI Instance => instance;
 
     [SerializeField] Text scoreText;
+    [SerializeField] Image[] hpImages;
+    [SerializeField] Sprite hpOnSprite;
+    [SerializeField] Sprite hpOffSprite;
 
     [Header("클리어 관련")]
     [SerializeField] GameObject clearPanel;     // 게임 종료시 출력되는 패널.
@@ -36,6 +39,7 @@ public class GameUI : MonoBehaviour
     {
         scoreText.text = score.ToString();
     }
+
     public void SwitchClearPanel(bool isOn, bool isGameClear)
     {
         clearPanel.SetActive(isOn);
@@ -43,4 +47,12 @@ public class GameUI : MonoBehaviour
         clearText.color = isGameClear ? clearColor : gameoverColor;
     }
     
+    public void UpdateHpImage(int hp)
+    {
+        for(int i = 0; i< hpImages.Length; i++)
+        {
+            hpImages[i].sprite = (i < hp) ? hpOnSprite : hpOffSprite;
+        }
+    }
+
 }

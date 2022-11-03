@@ -5,19 +5,16 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField] SpriteRenderer spriteRenderer;
+    [SerializeField] Attackable weapon;
     [SerializeField] Movement2D movement;
     [SerializeField] int hp;
     [SerializeField] float godTime;         // 무적 시간.
-
-    [Header("Attack")]
-    [SerializeField] Vector3 attackOffset;
-    [SerializeField] LayerMask attackMask;
-    [SerializeField] float attackRadius;
 
     // Rigidbody2D 컴포넌트를 참조하는 변수.
     Rigidbody2D rigid;
     new Collider2D collider2D;
 
+    bool isAlive => hp > 0;     // 플레이어의 생존 여부.
     int score;                  // 나의 점수.
     bool isLockControl;         // 캐릭터 컨트롤 막기.
     bool isPushForce;           // 내가 적에게 맞아서 일정 힘으로 날아가고 있다.
@@ -27,6 +24,9 @@ public class Player : MonoBehaviour
         // GetComponent : 오브젝트에게 붙어있는 Rigidbody2D 컴포넌트를 검색한다.
         rigid = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<Collider2D>();
+
+        GameUI.Instance.UpdateHpImage(hp);  // HP 이미지 업데이트.
+        weapon.Switch(true);                // 무기를 켠다.
     }
 
     // 매 프레임마다 1회씩 불리는 함수.
@@ -34,42 +34,21 @@ public class Player : MonoBehaviour
     {
         // !bool : not연산
         // true는 false, false는 true.
-        if (!isLockControl && !isPushForce)
-        {
-            float x = Input.GetAxis("Horizontal");
-            movement.Move(x);                           // 이동.
-            if (x < 0)
-                movement.FlipX(true);
-            else if(x > 0)
-                movement.FlipX(false);
+        if (isLockControl || isPushForce || !isAlive)
+            return;
 
-            if (Input.GetKeyDown(KeyCode.Space))        // 점프.
-                movement.Jump();
-        }
+        // GetAxisRaw : -1 or 0 or 1
+        // GetAxis    : -1.0f ~ 1.0f
+        float x = Input.GetAxis("Horizontal");
+        movement.Move(x);                           // 이동.
+        if (x < 0)
+            movement.FlipX(true);
+        else if (x > 0)
+            movement.FlipX(false);
 
-        Attack();
-    }
-   
-    private void Attack()
-    {
-        // 원형 충돌 영역을 만들고 그곳에 충돌한 모든 충돌체를 가져온다.
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position + attackOffset, attackRadius, attackMask);
-        if(colliders.Length > 0)
-        {
-            // 검색한 충돌체를 foreach문으로 순회.
-            foreach(Collider2D collider in colliders)
-            {
-                // Enemy 컴포넌트를 검색해 OnDamaged함수 호출.
-                Enemy enemy = collider.gameObject.GetComponent<Enemy>();
-                enemy.OnDamaged();
-            }
-
-            // 적을 공격하면 나는 위로 3만큼 뛴다.
-            rigid.velocity = new Vector2(rigid.velocity.x, 0f);
-            rigid.AddForce(Vector2.up * 6f, ForceMode2D.Impulse);
-        }
-    }
-
+        if (Input.GetKeyDown(KeyCode.Space))        // 점프.
+            movement.Jump();
+    }  
 
     // 기본 매개변수
     // => 인자를 넘기지 않으면 기본값으로 사용하겠다.
@@ -85,14 +64,22 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void OnDamage()
+    public void OnDead()
     {
-        SwitchLockControl(true, false);
-        collider2D.isTrigger = true;
-        GameUI.Instance.SwitchClearPanel(true, false);
+        hp = 0;
+        GameUI.Instance.UpdateHpImage(hp);
+
+        SwitchLockControl(true, false);                     // 컨트롤 막기.
+        collider2D.isTrigger = true;                        // 트리거로 변경.
+        GameUI.Instance.SwitchClearPanel(true, false);      // 클리어 패널 활성화.
+        FollowCamera.Instance.ResetTarget();                // 카메라 끊기.
+        weapon.Switch(false);                               // 무기 비활성화.
     }
     public void OnDamage(bool isLeft, float force)
     {
+        if (!isAlive)
+            return;
+
         Vector2 direction = Vector2.up;
         direction += Vector2.right * (isLeft ? -1f : 1f);
 
@@ -100,13 +87,24 @@ public class Player : MonoBehaviour
         rigid.velocity = Vector2.zero;
         rigid.AddForce(direction * force, ForceMode2D.Impulse);
 
-        StartCoroutine(IEGodMode());
-        StartCoroutine(IEForceLock());
+        hp -= 1;
+        GameUI.Instance.UpdateHpImage(hp);
+
+        if (isAlive)
+        {
+            StartCoroutine(IEGodMode());
+            StartCoroutine(IEForceLock());
+        }
+        else
+        {
+            OnDead();
+        }
     }
 
     IEnumerator IEGodMode()
     {
         gameObject.layer = LayerMask.NameToLayer("Player_God");
+        weapon.Switch(false);                               // 무기를 끈다.
 
         float time = godTime;
         float blinkTime = 0.0f;
@@ -124,6 +122,7 @@ public class Player : MonoBehaviour
         }
 
         spriteRenderer.color = Color.white;
+        weapon.Switch(true);                                // 무기를 켠다.
         gameObject.layer = LayerMask.NameToLayer("Player");
     }
     IEnumerator IEForceLock()
@@ -138,20 +137,11 @@ public class Player : MonoBehaviour
 
         isPushForce = false;
     }
-
-
     public void GetScore()
     {
         Debug.Log("점수가 1 증가!");
         score += 1;
 
         GameUI.Instance.UpdateScoreText(score);
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        // 씬 뷰에 가상의 아이콘을 그려주겠다. (광선)
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + attackOffset, attackRadius);
     }
 }

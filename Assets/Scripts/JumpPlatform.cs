@@ -21,6 +21,7 @@ public class JumpPlatform : MonoBehaviour
             rigid.velocity = new Vector2(rigid.velocity.x, 0f);
             rigid.AddForce(Vector2.up * force, ForceMode2D.Impulse);
             anim.SetTrigger("onActive");
+            AudioManager.Instance.PlaySE("JumpPlatform");
         }
 
         Movement2D movement2D = collision.gameObject.GetComponent<Movement2D>();

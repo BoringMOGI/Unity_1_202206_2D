@@ -47,7 +47,11 @@ public class Player : MonoBehaviour
             movement.FlipX(false);
 
         if (Input.GetKeyDown(KeyCode.Space))        // 점프.
-            movement.Jump();
+        {
+            bool isJump = movement.Jump();
+            if (isJump)
+                AudioManager.Instance.PlaySE("Jump");
+        }
     }  
 
     // 기본 매개변수
@@ -68,6 +72,7 @@ public class Player : MonoBehaviour
     {
         hp = 0;
         GameUI.Instance.UpdateHpImage(hp);
+        AudioManager.Instance.StopBGM();
 
         SwitchLockControl(true, false);                     // 컨트롤 막기.
         collider2D.isTrigger = true;                        // 트리거로 변경.
@@ -89,6 +94,7 @@ public class Player : MonoBehaviour
 
         hp -= 1;
         GameUI.Instance.UpdateHpImage(hp);
+        AudioManager.Instance.PlaySE("Hit");
 
         if (isAlive)
         {

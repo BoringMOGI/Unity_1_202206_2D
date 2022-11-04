@@ -40,6 +40,7 @@ public class Attackable : MonoBehaviour
         {
             rigid.velocity = new Vector2(rigid.velocity.x, 0f);
             rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+            AudioManager.Instance.PlaySE("Attack");
         }
     }
 

@@ -25,6 +25,7 @@ public class Movement2D : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        jumpCount = 1;
     }
     private void Update()
     {
@@ -49,14 +50,15 @@ public class Movement2D : MonoBehaviour
     {
         spriteRenderer.flipX = isFlipX;
     }
-    public void Jump()
+    public bool Jump()
     {
         if (jumpCount <= 0)
-            return;
+            return false;
 
         jumpCount--;
         rigid.velocity = new Vector2(rigid.velocity.x, 0f);
         rigid.AddForce(Vector2.up * jumpPower, ForceMode2D.Impulse);
+        return true;
     }
     public void OnJumpCountZero()
     {

@@ -24,6 +24,7 @@ public class GetItem : MonoBehaviour
         circleCollider2D.enabled = false;       // 나의 콜라이더를 꺼버린다.
         player.GetScore();                      // 플레이어에게 점수를 준다.
         anim.SetTrigger("onGet");               // 애니메이터의 onGet 트리거를 누른다.
+        AudioManager.Instance.PlaySE("Eat");    // 먹는 소리 재생.
     }
 
 

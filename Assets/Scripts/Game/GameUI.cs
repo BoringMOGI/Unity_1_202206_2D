@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour
@@ -53,6 +54,11 @@ public class GameUI : MonoBehaviour
         {
             hpImages[i].sprite = (i < hp) ? hpOnSprite : hpOffSprite;
         }
+    }
+
+    public void OnLoadTitle()
+    {
+        SceneManager.LoadScene("Title");
     }
 
 }
